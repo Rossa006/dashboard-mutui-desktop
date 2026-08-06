@@ -1,0 +1,74 @@
+{
+  "name": "dashboard-mutui-desktop",
+  "version": "1.0.0",
+  "description": "Dashboard Pratiche Mutuo — applicazione desktop (Windows/macOS)",
+  "author": "Riccardo Moretto",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --mac --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win",
+    "dist:dir": "electron-builder --dir",
+    "publish": "electron-builder --mac --win --publish always"
+  },
+  "devDependencies": {
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
+  },
+  "build": {
+    "appId": "it.euroansa.dashboardmutui",
+    "productName": "Dashboard Pratiche Mutuo",
+    "copyright": "Copyright © 2026 Riccardo Moretto",
+    "asar": true,
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "app/**/*",
+      "!**/*.map"
+    ],
+    "mac": {
+      "category": "public.app-category.finance",
+      "icon": "build/icon.icns",
+      "target": [
+        { "target": "dmg", "arch": ["universal"] },
+        { "target": "zip", "arch": ["universal"] }
+      ],
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
+    },
+    "dmg": {
+      "title": "${productName} ${version}"
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        { "target": "nsis", "arch": ["x64"] }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Dashboard Mutuo"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Rossa006",
+        "repo": "dashboard-mutui-desktop"
+      }
+    ]
+  }
+}
