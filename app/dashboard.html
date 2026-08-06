@@ -2221,8 +2221,10 @@ const IRS_FALLBACK = {
   ]
 };
 const IRS_PROXIES = [
-  u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
-  u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u)
+    u => u, // Tentativo 1: Chiamata diretta (funziona se webSecurity è disattivato su Electron)
+    u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+    u => 'https://corsproxy.io/?' + encodeURIComponent(u),
+    u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u)
 ];
 let IRS_DATA = JSON.parse(JSON.stringify(IRS_FALLBACK));
 let irsRefreshTimer = null;
