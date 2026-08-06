@@ -2314,7 +2314,8 @@ async function fetchIRS(){
   let lastErrorReason = null;
   for(const buildUrl of IRS_PROXIES){
     try{
-      const res = await fetch(buildUrl(IRS_SOURCE_URL));
+      const targetUrl = buildUrl(IRS_SOURCE_URL) + (buildUrl(IRS_SOURCE_URL).includes('?') ? '&' : '?') + '_t=' + Date.now();
+const res = await fetch(targetUrl, { cache: 'no-store' });
       if(!res.ok){ lastErrorReason = `risposta HTTP ${res.status} dal proxy`; continue; }
       const html = await res.text();
       const parsed = parseIRSHtml(html);
