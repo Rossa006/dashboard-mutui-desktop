@@ -80,6 +80,7 @@ function createWindow() {
       nodeIntegration: false,
       sandbox: false,
       spellcheck: true,
+      webSecurity: false,
     },
   });
 
