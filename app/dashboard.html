@@ -2221,8 +2221,8 @@ const IRS_FALLBACK = {
   ]
 };
 const IRS_PROXIES = [
-    u => u, // Tentativo 1: Chiamata diretta (funziona con webSecurity: false)
-    u => 'https://corsproxy.io/?' + encodeURIComponent(u), // Proxy rapido di riserva
+    u => u, // <--- FONDAMENTALE: fa la chiamata diretta senza passare da intermediari che danno 521
+    u => 'https://corsproxy.io/?' + encodeURIComponent(u),
     u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u)
 ];
 let IRS_DATA = JSON.parse(JSON.stringify(IRS_FALLBACK));
