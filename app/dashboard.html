@@ -2207,7 +2207,7 @@ function m(codice){ return MANUAL[codice] || {}; }
 // Fonte: https://mutuionline.24oreborsaonline.ilsole24ore.com/guide-mutui/irs.asp
 // Snapshot incorporato come base di partenza sempre disponibile (fixing 27/07/2026);
 // il codice tenta poi di aggiornarlo dal vivo ogni volta che la pagina è aperta.
-const IRS_SOURCE_URL = 'https://mutuionline.24oreborsaonline.ilsole24ore.com/guide-mutui/irs.asp';
+const IRS_SOURCE_URL = 'https://www.mutuionline.it/guide-mutui/tassi-eurirs.asp';
 const IRS_MATURITIES = [1,2,3,4,5,6,7,8,9,10,11,12,15,20,25,30,40,50];
 const IRS_STORAGE_KEY = 'sirio-irs-cache-v1';
 const IRS_FALLBACK = {
@@ -2311,34 +2311,47 @@ async function loadIRSCache(){
 let irsLastAttemptAt = null;
 
 async function fetchIRS(){
-  const statusEl = document.getElementById('irsStatus');
-  if(statusEl) statusEl.innerHTML = `Verifico l'ultimo dato EURIRS…`;
-  let lastErrorReason = null;
-  for(const buildUrl of IRS_PROXIES){
-    try{
-      const targetUrl = buildUrl(IRS_SOURCE_URL) + (buildUrl(IRS_SOURCE_URL).includes('?') ? '&' : '?') + '_t=' + Date.now();
-const res = await fetch(targetUrl, { cache: 'no-store' });
-      if(!res.ok){ lastErrorReason = `risposta HTTP ${res.status} dal proxy`; continue; }
-      const html = await res.text();
-      const parsed = parseIRSHtml(html);
-      if(parsed.rows.length >= 10){
-        IRS_DATA = { fetchedAt: new Date().toISOString(), isLive: true, fixingDate: parsed.fixingDate, rows: parsed.rows };
-        try{ await window.storage.set(IRS_STORAGE_KEY, JSON.stringify(IRS_DATA), false); }catch(e){}
-        refreshIRSDisplays();
-        irsLastAttemptAt = new Date();
-        updateIRSStatusUI();
-        return true;
-      }else{
-        lastErrorReason = 'la pagina ricevuta non è nel formato atteso';
-      }
-    }catch(e){
-      lastErrorReason = 'proxy non raggiungibile (rete o CORS)';
-      console.log('Proxy EURIRS non raggiungibile, provo il successivo', e);
+    const statusEl = document.getElementById('irsStatus');
+    if(statusEl) statusEl.innerHTML = `Verifico l'ultimo dato EURIRS...`;
+    let lastErrorReason = null;
+
+    for(const buildUrl of IRS_PROXIES){
+        try{
+            const cleanUrl = IRS_SOURCE_URL + (IRS_SOURCE_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
+            const targetUrl = buildUrl(cleanUrl);
+            const res = await fetch(targetUrl, { cache: 'no-store' });
+            
+            if(!res.ok){ 
+                lastErrorReason = `risposta HTTP ${res.status} dal proxy`; 
+                continue; 
+            }
+            
+            const html = await res.text();
+            const parsed = parseIRSHtml(html);
+            
+            if(parsed && parsed.rows && parsed.rows.length >= 5){
+                IRS_DATA = { 
+                    fetchedAt: new Date().toISOString(), 
+                    isLive: true, 
+                    fixingDate: parsed.fixingDate, 
+                    rows: parsed.rows 
+                };
+                try{ await window.storage.set(IRS_STORAGE_KEY, JSON.stringify(IRS_DATA), false); }catch(e){}
+                refreshIRSDisplays();
+                irsLastAttemptAt = new Date();
+                updateIRSStatusUI();
+                return true;
+            }else{
+                lastErrorReason = 'la pagina ricevuta non è nel formato atteso';
+            }
+        }catch(e){
+            lastErrorReason = 'proxy non raggiungibile (rete o CORS)';
+        }
     }
-  }
-  irsLastAttemptAt = new Date();
-  updateIRSStatusUI(lastErrorReason);
-  return false;
+
+    irsLastAttemptAt = new Date();
+    updateIRSStatusUI(lastErrorReason);
+    return false;
 }
 
 function irsForDuration(durataMesi){
