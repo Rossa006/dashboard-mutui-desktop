@@ -2221,10 +2221,9 @@ const IRS_FALLBACK = {
   ]
 };
 const IRS_PROXIES = [
-    u => u, // Tentativo 1: Chiamata diretta (funziona se webSecurity è disattivato su Electron)
-    u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
-    u => 'https://corsproxy.io/?' + encodeURIComponent(u),
-    u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u)
+    u => u, // Tentativo 1: Chiamata diretta (funziona con webSecurity: false)
+    u => 'https://corsproxy.io/?' + encodeURIComponent(u), // Proxy rapido di riserva
+    u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u)
 ];
 let IRS_DATA = JSON.parse(JSON.stringify(IRS_FALLBACK));
 let irsRefreshTimer = null;
@@ -2317,12 +2316,13 @@ async function fetchIRS(){
 
     for(const buildUrl of IRS_PROXIES){
         try{
+            // Parametro anti-cache per forzare il download del dato live
             const cleanUrl = IRS_SOURCE_URL + (IRS_SOURCE_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
             const targetUrl = buildUrl(cleanUrl);
             const res = await fetch(targetUrl, { cache: 'no-store' });
             
             if(!res.ok){ 
-                lastErrorReason = `risposta HTTP ${res.status} dal proxy`; 
+                lastErrorReason = `risposta HTTP ${res.status}`; 
                 continue; 
             }
             
@@ -2342,10 +2342,10 @@ async function fetchIRS(){
                 updateIRSStatusUI();
                 return true;
             }else{
-                lastErrorReason = 'la pagina ricevuta non è nel formato atteso';
+                lastErrorReason = 'formato pagina non riconosciuto';
             }
         }catch(e){
-            lastErrorReason = 'proxy non raggiungibile (rete o CORS)';
+            lastErrorReason = 'connessione fallita';
         }
     }
 
